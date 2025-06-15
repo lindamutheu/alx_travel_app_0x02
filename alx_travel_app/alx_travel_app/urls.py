@@ -20,3 +20,8 @@ from django.urls import path
 urlpatterns = [
     path('admin/', admin.site.urls),
 ]
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/', include('listings.urls')),  # This exposes /api/listings/ and /api/bookings/
+]
