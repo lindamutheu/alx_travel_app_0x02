@@ -1,4 +1,4 @@
-#week 4 
+# week 4 
 from django.db import models
 import uuid
 from django.contrib.auth import get_user_model
@@ -27,7 +27,7 @@ class Booking(models.Model):
         CANCELED = 'canceled', 'Canceled'
 
     booking_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='bookings')
+    property = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name='bookings')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')
     start_date = models.DateField()
     end_date = models.DateField()
@@ -41,7 +41,7 @@ class Booking(models.Model):
 
 class Review(models.Model):
     review_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='reviews')
+    property = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
     rating = models.PositiveSmallIntegerField()
     comment = models.TextField()
@@ -57,3 +57,19 @@ class Review(models.Model):
         return f"Review by {self.user.username} - {self.rating}/5"
 
 
+class Payment(models.Model):
+    class PaymentStatus(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        COMPLETED = 'completed', 'Completed'
+        FAILED = 'failed', 'Failed'
+
+    payment_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name='payment')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    chapa_tx_ref = models.CharField(max_length=100, unique=True)
+    chapa_transaction_id = models.CharField(max_length=100, null=True, blank=True)
+    status = models.CharField(max_length=10, choices=PaymentStatus.choices, default=PaymentStatus.PENDING)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Payment for {self.booking.booking_id} - {self.status}"
