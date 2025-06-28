@@ -15,3 +15,4 @@ This project is a continuation of the `alx_travel_app_0x00` Django project. It f
 
 ## 🗂️ Project Structure
 
+# alx_travel_app_0x02
