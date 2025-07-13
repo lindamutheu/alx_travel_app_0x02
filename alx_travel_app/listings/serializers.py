@@ -1,12 +1,12 @@
 from rest_framework import serializers
-from .models import Property, Booking
+from .models import Listing, Booking
 
 
 class ListingSerializer(serializers.ModelSerializer):
     host_username = serializers.CharField(source='host.username', read_only=True)
 
     class Meta:
-        model = Property
+        model = Listing  # ✅ Corrected from Property to Listing
         fields = [
             'property_id',
             'name',

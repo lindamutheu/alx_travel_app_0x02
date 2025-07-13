@@ -10,7 +10,7 @@ This project focuses on database modeling and data seeding in Django. The main g
 
 ### 1. 🔁 Duplicate Project
 
-- Cloned the original `alx_travel_app` repository to a new project named `alx_travel_app_0x00`.
+- Cloned the original `alx_travel_app` repository to a new project named `alx_travel_app_0x03`.
 
 ---
 

@@ -1,14 +1,20 @@
-# week 6
+#!/usr/bin/env python3
+"""Views for the listings app"""
 
+# week 6
 import requests
 from django.conf import settings
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.http import JsonResponse
 
 from .models import Listing, Booking, Payment
 from .serializers import ListingSerializer, BookingSerializer
-from .tasks import send_payment_confirmation_email  # ✅ Import Celery task
+from .tasks import (
+    send_payment_confirmation_email,  # ✅ Existing Celery task
+    send_booking_confirmation_email   # ✅ New Celery task
+)
 
 
 class ListingViewSet(viewsets.ModelViewSet):
@@ -20,9 +26,23 @@ class BookingViewSet(viewsets.ModelViewSet):
     queryset = Booking.objects.all()
     serializer_class = BookingSerializer
 
+    def perform_create(self, serializer):
+        """
+        Override perform_create to trigger email notification asynchronously
+        """
+        booking = serializer.save(user=self.request.user)
+        # ✅ Send booking confirmation email via Celery
+        send_booking_confirmation_email.delay(
+            user_email=self.request.user.email,
+            booking_id=booking.id
+        )
+
 
 @api_view(['POST'])
 def initiate_payment(request):
+    """
+    Initialize payment with Chapa API and create Payment record
+    """
     data = request.data
     tx_ref = f"ref_{data['booking_id']}"
     payload = {
@@ -62,6 +82,9 @@ def initiate_payment(request):
 
 @api_view(['GET'])
 def verify_payment(request):
+    """
+    Verify payment status with Chapa API and update Payment record
+    """
     tx_ref = request.query_params.get('tx_ref')
     url = f"https://api.chapa.co/v1/transaction/verify/{tx_ref}"
     headers = {
@@ -90,3 +113,10 @@ def verify_payment(request):
             return Response({"error": "Payment record not found"}, status=404)
 
     return Response({"error": "Verification failed"}, status=400)
+
+
+def home(request):
+    """
+    Simple home endpoint
+    """
+    return JsonResponse({"message": "Welcome to ALX Travel App API"})
